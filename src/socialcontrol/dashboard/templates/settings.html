@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Settings</h1>
+<div class="card card-body mb-3 border-{{ "danger" if kill else "secondary" }}">
+  <h2 class="h6">Kill switch</h2>
+  <p class="mb-2">When ON, no post is published and no assisted package is delivered. Slots keep their times; posts that become too old are held for your decision.</p>
+  <form method="post" action="/settings/kill-switch">{{ csrf_field() }}
+    {% if kill %}<button class="btn btn-success">Turn OFF (resume publishing)</button>
+    {% else %}<input type="hidden" name="active" value="on"><button class="btn btn-danger" onclick="return confirm('Stop all publishing?')">Turn ON (stop publishing)</button>{% endif %}
+  </form>
+</div>
+<div class="card"><div class="card-header">Recent security events</div><ul class="list-group list-group-flush small">
+{% for e in events %}<li class="list-group-item">{{ e.at|dt }} · {{ e.kind }} · {{ e.detail }}</li>{% else %}<li class="list-group-item text-muted">None.</li>{% endfor %}</ul></div>
+{% endblock %}

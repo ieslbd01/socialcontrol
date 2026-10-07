@@ -1,0 +1,42 @@
+name: Publisher
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # public repo: free minutes. Private repo: use "*/30 * * * *" (see OPS-01)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Runs only on the default branch, never for forks or pull requests.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SC_ENV: prod
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SC_SIGNING_KEY: ${{ secrets.SC_SIGNING_KEY }}
+      SC_MASTER_KEY: ${{ secrets.SC_MASTER_KEY }}
+      SC_BASE_URL: ${{ secrets.SC_BASE_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
+    steps:
+      # NOTE: pin third-party actions by commit SHA before the first real release (SEC-09).
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -e .
+      - run: python -m socialcontrol publisher

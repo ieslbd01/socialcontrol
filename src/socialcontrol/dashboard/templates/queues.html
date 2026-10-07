@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Queues</h1>
+<div class="table-responsive"><table class="table table-sm align-middle bg-white">
+  <thead><tr><th>Queue</th><th>Channel</th><th>Schedule</th><th>Pattern</th><th>Pending</th><th>Runway</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for q in queues %}<tr>
+    <td>{{ q.name }}{% if not q.require_approval %} <span class="badge text-bg-danger">no approval</span>{% endif %}</td>
+    <td>{{ q.platform_key }} <small class="text-muted">{{ q.short_name }} · {{ q.mode }}</small></td>
+    <td class="small">{{ q.recurrence.type }}{% if q.recurrence.every %} every {{ q.recurrence.every }}{% endif %}{% if q.recurrence.every_weeks %} every {{ q.recurrence.every_weeks }}w {{ q.recurrence.weekdays|join(",") }}{% endif %} @ {{ q.recurrence.time_local }} ({{ q.timezone }})</td>
+    <td class="small">{{ q.pattern|join(" → ") }} <span class="text-muted">{{ q.pattern_mode }}</span></td>
+    <td>{{ q.pending }}</td>
+    <td class="{{ "text-danger fw-bold" if q.low else "" }}">{{ q.runway }}d</td>
+    <td>{{ q.status }}</td>
+    <td class="text-nowrap">
+      <form class="d-inline" method="post" action="/queues/{{ q.id }}/status">{{ csrf_field() }}<input type="hidden" name="status" value="{{ "PAUSED" if q.status == "ACTIVE" else "ACTIVE" }}"><button class="btn btn-sm btn-outline-secondary">{{ "Pause" if q.status == "ACTIVE" else "Resume" }}</button></form>
+      <form class="d-inline" method="post" action="/queues/{{ q.id }}/simulate">{{ csrf_field() }}<button class="btn btn-sm btn-outline-info">Next slots</button></form>
+    </td></tr>
+  {% else %}<tr><td colspan="8" class="text-muted">No queues yet. Create one below.</td></tr>{% endfor %}</tbody></table></div>
+
+<div class="card card-body">
+  <h2 class="h6">New queue</h2>
+  <form method="post" action="/queues">
+    {{ csrf_field() }}
+    <div class="row g-2">
+      <div class="col-md-3"><label class="form-label">Channel account</label><select class="form-select" name="account_id" required>{% for a in accounts %}<option value="{{ a.id }}">{{ a.platform_key }} · {{ a.short_name }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Name</label><input class="form-control" name="name" value="Main" required></div>
+      <div class="col-md-2"><label class="form-label">Starts on</label><input class="form-control" type="date" name="start_date" required></div>
+      <div class="col-md-2"><label class="form-label">Time</label><input class="form-control" type="time" name="time_local" value="10:00"></div>
+      <div class="col-md-3"><label class="form-label">Timezone</label><input class="form-control" name="timezone" value="Asia/Dhaka"></div>
+      <div class="col-md-3"><label class="form-label">Repeat</label><select class="form-select" name="kind"><option value="interval_days">Every N days</option><option value="weekly">Weekly on days</option><option value="monthly_day">Monthly on a date</option><option value="monthly_nth">Monthly on the Nth weekday</option><option value="once">Once</option></select></div>
+      <div class="col-md-2"><label class="form-label">Every (N)</label><input class="form-control" type="number" min="1" name="every" value="7"></div>
+      <div class="col-md-3"><label class="form-label">Weekdays (weekly)</label><div>{% for d in weekdays %}<label class="me-2"><input type="checkbox" name="weekdays" value="{{ d }}"> {{ d }}</label>{% endfor %}</div></div>
+      <div class="col-md-2"><label class="form-label">Day of month</label><input class="form-control" type="number" min="1" max="31" name="day" value="1"></div>
+      <div class="col-md-2"><label class="form-label">Nth / weekday</label><div class="input-group"><input class="form-control" type="number" name="nth" value="1" min="-1" max="5"><select class="form-select" name="weekday">{% for d in weekdays %}<option>{{ d }}</option>{% endfor %}</select></div></div>
+      <div class="col-md-8"><label class="form-label">Content mix pattern (post types, comma separated)</label><input class="form-control" name="pattern" placeholder="text_image, image, video, image, text_image"></div>
+      <div class="col-md-2"><label class="form-label">If a type is missing</label><select class="form-select" name="pattern_mode"><option value="RELAXED">Use next post (relaxed)</option><option value="STRICT">Skip to next step (strict)</option></select></div>
+      <div class="col-md-2 d-flex align-items-end gap-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="require_approval" id="ra" checked><label class="form-check-label" for="ra">Require approval</label></div></div>
+      <div class="col-md-3 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="evergreen" id="ev"><label class="form-check-label" for="ev">Reuse evergreen posts when empty</label></div></div>
+    </div>
+    <button class="btn btn-primary mt-3">Create queue</button>
+  </form>
+</div>
+{% endblock %}

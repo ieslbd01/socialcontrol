@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Channels and accounts</h1>
+<div class="table-responsive"><table class="table table-sm align-middle bg-white">
+  <thead><tr><th>Account</th><th>Channel</th><th>Mode</th><th>State</th><th>Queues</th><th>Last published</th><th></th></tr></thead><tbody>
+  {% for a in accounts %}<tr>
+    <td>{{ a.display_name }} <small class="text-muted">{{ a.short_name }}</small>{% if a.last_error %}<div class="small text-danger">{{ a.last_error }}</div>{% endif %}</td>
+    <td>{{ a.platform_key }}</td>
+    <td><form class="d-flex gap-1" method="post" action="/accounts/{{ a.id }}/mode">{{ csrf_field() }}
+      <select class="form-select form-select-sm" name="mode">{% for m in ["ASSISTED", "AUTO"] %}<option {{ "selected" if a.mode == m }}>{{ m }}</option>{% endfor %}</select>
+      <button class="btn btn-sm btn-outline-secondary">Set</button></form></td>
+    <td>{{ a.state }}</td><td>{{ a.queues }}</td><td>{{ a.last_publish_at|dt }}</td>
+    <td><form method="post" action="/accounts/{{ a.id }}/toggle">{{ csrf_field() }}<button class="btn btn-sm btn-outline-{{ "success" if a.state == "DISABLED" else "danger" }}">{{ "Enable" if a.state == "DISABLED" else "Disable" }}</button></form></td></tr>
+  {% else %}<tr><td colspan="7" class="text-muted">No accounts yet.</td></tr>{% endfor %}</tbody></table></div>
+
+<div class="card card-body mb-3">
+  <h2 class="h6">Add an account</h2>
+  <form method="post" action="/accounts" class="row g-2">{{ csrf_field() }}
+    <div class="col-md-3"><select class="form-select" name="platform_key">{% for p in platforms %}<option value="{{ p.key }}">{{ p.display_name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><input class="form-control" name="short_name" placeholder="short_name" required></div>
+    <div class="col-md-3"><input class="form-control" name="display_name" placeholder="Display name"></div>
+    <div class="col-md-3"><input class="form-control" name="destination_url" placeholder="Page / channel link (for assisted)"></div>
+    <div class="col-md-1"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+  <div class="form-text">Channels start in the mode recommended for them. AUTO is switched on per account once the platform approval is in place.</div>
+</div>
+<div class="row g-3">{% for p in platforms %}<div class="col-md-4"><div class="card card-body py-2"><strong>{{ p.display_name }}</strong><div class="small text-muted">Default mode {{ p.default_mode }}</div><div class="small">Post types: {{ caps.get(p.key, [])|join(", ") }}</div></div></div>{% endfor %}</div>
+{% endblock %}

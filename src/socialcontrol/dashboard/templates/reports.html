@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Reports</h1>
+<div class="btn-group mb-3">{% for k in ["daily", "weekly", "monthly"] %}<a class="btn btn-sm btn-{{ "primary" if k == kind else "outline-primary" }}" href="/reports?kind={{ k }}">{{ k|title }}</a>{% endfor %}</div>
+<div class="card card-body mb-3"><pre class="mb-2" style="white-space:pre-wrap">{{ text_summary }}</pre>
+  <div class="d-flex gap-2"><a class="btn btn-outline-secondary btn-sm" href="/reports/download?kind={{ kind }}&fmt=csv">CSV</a><a class="btn btn-outline-secondary btn-sm" href="/reports/download?kind={{ kind }}&fmt=xlsx">Excel</a><a class="btn btn-outline-secondary btn-sm" href="/reports/download?kind={{ kind }}&fmt=json">JSON</a></div></div>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card"><div class="card-header">By channel</div><table class="table table-sm mb-0"><thead><tr><th>Channel</th><th>Published</th><th>Failed</th><th>Delivered</th></tr></thead><tbody>
+    {% for r in rep.by_platform %}<tr><td>{{ r.platform_key }}</td><td>{{ r.published }}</td><td>{{ r.failed }}</td><td>{{ r.delivered }}</td></tr>{% else %}<tr><td colspan="4" class="text-muted">No activity.</td></tr>{% endfor %}</tbody></table></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-header">By queue</div><table class="table table-sm mb-0"><thead><tr><th>Queue</th><th>Published</th><th>Failed</th></tr></thead><tbody>
+    {% for r in rep.by_queue %}<tr><td>{{ r.platform_key }} / {{ r.queue }}</td><td>{{ r.published }}</td><td>{{ r.failed }}</td></tr>{% else %}<tr><td colspan="3" class="text-muted">No activity.</td></tr>{% endfor %}</tbody></table></div></div>
+  <div class="col-12"><div class="card"><div class="card-header">Failures</div><table class="table table-sm mb-0"><tbody>
+    {% for r in rep.failures %}<tr><td><a href="/posts/{{ r.post_id }}">{{ r.post_id }}</a></td><td>{{ r.failure_class }}</td><td>{{ r.error_message }}</td></tr>{% else %}<tr><td class="text-muted">None.</td></tr>{% endfor %}</tbody></table></div></div>
+</div>
+{% endblock %}

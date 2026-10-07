@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Bulk import</h1>
+<form method="post" action="/imports" enctype="multipart/form-data" class="card card-body mb-3">
+  {{ csrf_field() }}
+  <div class="row g-3">
+    <div class="col-md-5"><label class="form-label">content.csv</label><input class="form-control" type="file" name="csv_file" accept=".csv" required></div>
+    <div class="col-md-5"><label class="form-label">Media ZIP file(s) (optional)</label><input class="form-control" type="file" name="zips" accept=".zip" multiple></div>
+    <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100">Check files</button></div>
+  </div>
+  <div class="form-text mt-2">Nothing is saved until you review the report and confirm. <a href="/imports/template.csv">Download the CSV template</a>.</div>
+</form>
+<div class="table-responsive"><table class="table table-sm bg-white">
+  <thead><tr><th>When</th><th>File</th><th>Status</th><th>Result</th><th></th></tr></thead><tbody>
+  {% for b in batches %}<tr><td>{{ b.created_at|dt }}</td><td>{{ b.csv_name }}</td><td>{{ b.status }}</td>
+    <td class="small">{{ b.counts }}</td>
+    <td><a class="btn btn-sm btn-outline-secondary" href="/imports/{{ b.id }}">Report</a>
+    {% if b.status == "CONFIRMED" %}<form class="d-inline" method="post" action="/imports/{{ b.id }}/undo" onsubmit="return confirm('Remove the unpublished posts of this import?')">{{ csrf_field() }}<button class="btn btn-sm btn-outline-danger">Undo</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="5" class="text-muted">No imports yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

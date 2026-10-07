@@ -1,0 +1,27 @@
+name: Keepalive
+
+# GitHub disables scheduled workflows in repositories with no activity for 60 days.
+# This job re-enables any that were disabled. It is a best-effort safety net, not a guarantee:
+# push any commit (or press "Run workflow") at least every 50 days, and heed the dashboard banner
+# "The publisher has not run" (OPS-01 / OPS-02).
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Re-enable the scheduled workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in publisher.yml reports.yml backup.yml watchdog.yml; do
+            gh workflow enable "$wf" --repo "${{ github.repository }}" || true
+          done

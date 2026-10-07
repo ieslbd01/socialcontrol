@@ -1,0 +1,45 @@
+{
+  "_note": "Seed data for platforms and capabilities. Limits are planning values from FEASIBILITY-01 / PRD-13 and must be re-verified against each channel's official documentation before the AUTO adapter is enabled.",
+  "platforms": [
+    {"key": "facebook_page", "display_name": "Facebook Page", "code": "FB",
+     "adapter": "socialcontrol.platforms.adapters.facebook:FacebookPageAdapter", "default_mode": "ASSISTED"},
+    {"key": "instagram", "display_name": "Instagram", "code": "IG",
+     "adapter": "socialcontrol.platforms.adapters.instagram:InstagramAdapter", "default_mode": "ASSISTED"},
+    {"key": "youtube", "display_name": "YouTube", "code": "YT",
+     "adapter": "socialcontrol.platforms.adapters.youtube:YouTubeAdapter", "default_mode": "ASSISTED"},
+    {"key": "linkedin_company", "display_name": "LinkedIn Company Page", "code": "LI",
+     "adapter": "socialcontrol.platforms.adapters.linkedin:LinkedInAdapter", "default_mode": "ASSISTED"},
+    {"key": "google_business", "display_name": "Google Business Profile", "code": "GBP",
+     "adapter": "socialcontrol.platforms.adapters.google_business:GoogleBusinessAdapter", "default_mode": "ASSISTED"},
+    {"key": "whatsapp_channel", "display_name": "WhatsApp Channel", "code": "WA",
+     "adapter": "socialcontrol.platforms.adapters.whatsapp_channel:WhatsAppChannelAdapter", "default_mode": "ASSISTED"}
+  ],
+  "capabilities": [
+    {"platform_key": "facebook_page", "post_type": "text", "max_caption_chars": 63000},
+    {"platform_key": "facebook_page", "post_type": "link", "max_caption_chars": 63000},
+    {"platform_key": "facebook_page", "post_type": "image", "max_caption_chars": 63000, "requires_media": true, "media_types": ["jpeg", "png"]},
+    {"platform_key": "facebook_page", "post_type": "text_image", "max_caption_chars": 63000, "requires_media": true, "media_types": ["jpeg", "png"]},
+    {"platform_key": "facebook_page", "post_type": "video", "max_caption_chars": 63000, "requires_media": true, "media_types": ["mp4", "mov"]},
+
+    {"platform_key": "instagram", "post_type": "image", "max_caption_chars": 2200, "max_hashtags": 30, "requires_media": true, "media_types": ["jpeg"]},
+    {"platform_key": "instagram", "post_type": "carousel", "max_caption_chars": 2200, "max_hashtags": 30, "requires_media": true, "media_types": ["jpeg", "mp4"], "extra": {"min_items": 2, "max_items": 10}},
+    {"platform_key": "instagram", "post_type": "reel", "max_caption_chars": 2200, "max_hashtags": 30, "requires_media": true, "media_types": ["mp4"]},
+
+    {"platform_key": "youtube", "post_type": "video", "max_caption_chars": 5000, "requires_media": true, "media_types": ["mp4", "mov"], "extra": {"max_title_chars": 100}},
+
+    {"platform_key": "linkedin_company", "post_type": "text", "max_caption_chars": 3000},
+    {"platform_key": "linkedin_company", "post_type": "text_image", "max_caption_chars": 3000, "requires_media": true, "media_types": ["jpeg", "png"]},
+    {"platform_key": "linkedin_company", "post_type": "link", "max_caption_chars": 3000},
+    {"platform_key": "linkedin_company", "post_type": "document", "max_caption_chars": 3000, "requires_media": true, "media_types": ["pdf"]},
+    {"platform_key": "linkedin_company", "post_type": "video", "max_caption_chars": 3000, "requires_media": true, "media_types": ["mp4"]},
+
+    {"platform_key": "google_business", "post_type": "update", "max_caption_chars": 1500, "media_types": ["jpeg", "png"], "extra": {"cta_types": ["LEARN_MORE", "CALL", "BOOK", "ORDER", "SHOP", "SIGN_UP"], "product_posts": false}},
+    {"platform_key": "google_business", "post_type": "event", "max_caption_chars": 1500, "media_types": ["jpeg", "png"]},
+    {"platform_key": "google_business", "post_type": "offer", "max_caption_chars": 1500, "media_types": ["jpeg", "png"]},
+
+    {"platform_key": "whatsapp_channel", "post_type": "text"},
+    {"platform_key": "whatsapp_channel", "post_type": "text_image", "requires_media": true, "media_types": ["jpeg", "png"]},
+    {"platform_key": "whatsapp_channel", "post_type": "text_video", "requires_media": true, "media_types": ["mp4"]},
+    {"platform_key": "whatsapp_channel", "post_type": "link"}
+  ]
+}

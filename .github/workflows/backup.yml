@@ -1,0 +1,39 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: "30 20 * * 6"    # weekly, Saturday night UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SC_ENV: prod
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SC_BACKUP_KEY: ${{ secrets.SC_BACKUP_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install a pg_dump that matches the server
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+      - run: pip install -e .
+      - run: python -m socialcontrol backup
+      # The encrypted dump is stored as a private workflow artifact for 30 days.
+      # Move it to Cloudflare R2 / the owner's drive once that storage exists (OPS-03).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backups/*.dump.enc
+          retention-days: 30
+          if-no-files-found: error

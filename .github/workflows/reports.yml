@@ -1,0 +1,48 @@
+name: Reports
+
+on:
+  schedule:
+    - cron: "5 2 * * *"      # daily 08:05 Dhaka (summary of the previous day)
+    - cron: "10 2 * * 1"     # weekly, Monday 08:10 Dhaka
+    - cron: "15 2 1 * *"     # monthly, 1st 08:15 Dhaka
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "daily, weekly or monthly"
+        required: true
+        default: daily
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SC_ENV: prod
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SC_SIGNING_KEY: ${{ secrets.SC_SIGNING_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -e .
+      - name: Choose report kind
+        id: kind
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "k=${{ github.event.inputs.kind }}" >> "$GITHUB_OUTPUT";
+          elif [ "${{ github.event.schedule }}" = "15 2 1 * *" ]; then echo "k=monthly" >> "$GITHUB_OUTPUT";
+          elif [ "${{ github.event.schedule }}" = "10 2 * * 1" ]; then echo "k=weekly" >> "$GITHUB_OUTPUT";
+          else echo "k=daily" >> "$GITHUB_OUTPUT"; fi
+      - run: python -m socialcontrol report ${{ steps.kind.outputs.k }}

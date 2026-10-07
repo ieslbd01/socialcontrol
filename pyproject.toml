@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socialcontrol"
+version = "0.1.0"
+description = "SocialControl - central social content scheduling and publishing"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi", "uvicorn", "pydantic>=2", "pydantic-settings", "sqlalchemy>=2",
+  "psycopg[binary]", "alembic", "httpx", "cryptography", "tzdata",
+  "openpyxl", "jinja2", "python-multipart", "itsdangerous",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "hypothesis", "ruff", "mypy", "freezegun", "types-openpyxl"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+socialcontrol = ["py.typed", "dashboard/templates/*.html", "database/migrations/*.py", "database/migrations/*.mako", "database/migrations/versions/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["integration: needs local Postgres (docker compose up -d)"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]  # long SQL strings; ruff format controls code line length
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "fastapi.Depends"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true

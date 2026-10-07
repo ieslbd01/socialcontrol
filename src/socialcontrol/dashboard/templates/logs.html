@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Publishing log</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-6 col-md-3"><input class="form-control" name="q" placeholder="Post ID or error text" value="{{ f.q }}"></div>
+  <div class="col-6 col-md-2"><input class="form-control" name="platform" placeholder="Channel key" value="{{ f.platform }}"></div>
+  <div class="col-6 col-md-2"><select class="form-select" name="result"><option value="">Any result</option>{% for r in ["SUCCESS", "FAILED", "DELIVERED", "CONFIRMED", "SKIPPED"] %}<option {{ "selected" if f.result == r }}>{{ r }}</option>{% endfor %}</select></div>
+  <div class="col-3 col-md-1"><button class="btn btn-outline-primary w-100">Filter</button></div>
+  <div class="col-3 col-md-2"><a class="btn btn-outline-secondary w-100" href="/logs?fmt=csv&q={{ f.q|urlencode }}&platform={{ f.platform }}&result={{ f.result }}">CSV</a></div>
+</form>
+<div class="table-responsive"><table class="table table-sm bg-white"><thead><tr><th>When</th><th>Post</th><th>Channel</th><th>Type</th><th>Result</th><th>Detail</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.started_at|dt }}</td><td><a href="/posts/{{ r.post_id }}">{{ r.post_id }}</a></td><td>{{ r.platform_key }}</td><td>{{ r.attempt_type }}</td><td>{{ r.result }}</td><td class="small">{{ r.failure_class or "" }} {{ r.error_code or "" }} {{ r.error_message or "" }}</td></tr>
+{% else %}<tr><td colspan="6" class="text-muted">No log entries.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

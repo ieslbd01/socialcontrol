@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Assisted posts to publish by hand</h1>
+{% for t in tasks %}
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between"><span><strong>{{ t.platform_key }}</strong> · {{ t.display_name }} · <a href="/posts/{{ t.post_id }}">{{ t.post_id }}</a></span>
+    <span class="badge text-bg-{{ "danger" if t.state == "OVERDUE" else "warning" }}">{{ t.state }}</span></div>
+  <div class="card-body">
+    <pre class="pkg" id="txt-{{ t.id }}">{% if t.title %}{{ t.title }}
+
+{% endif %}{{ t.caption }}{% if t.hashtags %}
+
+{{ t.hashtags|join(" ") }}{% endif %}</pre>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      {% if t.destination_url %}<a class="btn btn-outline-primary btn-sm" href="{{ t.destination_url }}" target="_blank" rel="noopener">Open destination</a>{% endif %}
+      <form method="post" action="/assisted/{{ t.id }}/done" class="d-flex gap-2">{{ csrf_field() }}
+        <input class="form-control form-control-sm" name="published_url" placeholder="Link to the post (optional)">
+        <button class="btn btn-success btn-sm text-nowrap">Mark done</button></form>
+      <form method="post" action="/assisted/{{ t.id }}/skip">{{ csrf_field() }}<button class="btn btn-outline-secondary btn-sm">Skip</button></form>
+    </div>
+  </div>
+</div>
+{% else %}<p class="text-muted">Nothing waiting. Assisted posts appear here when their slot time arrives.</p>{% endfor %}
+{% endblock %}

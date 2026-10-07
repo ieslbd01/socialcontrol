@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge, csrf_field with context %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h4 mb-0">{{ p.post_id }} {{ status_badge(p.status) }}</h1>
+  <a href="/posts" class="btn btn-sm btn-outline-secondary">Back to posts</a>
+</div>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <form method="post" action="/posts/{{ p.post_id }}/edit" class="card card-body mb-3">
+      {{ csrf_field() }}
+      {% set locked = p.status in ("PUBLISHING", "AWAITING_CONFIRMATION", "PUBLISHED") %}
+      <div class="mb-2"><label class="form-label">Title</label><input class="form-control" name="title" value="{{ p.title or "" }}" {{ "disabled" if locked }}></div>
+      <div class="mb-2"><label class="form-label">Text</label><textarea class="form-control" name="caption" rows="7" {{ "disabled" if locked }}>{{ p.caption or "" }}</textarea></div>
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Link</label><input class="form-control" name="link_url" value="{{ p.link_url or "" }}" {{ "disabled" if locked }}></div>
+        <div class="col-md-3"><label class="form-label">Language</label>
+          <select class="form-select" name="language" {{ "disabled" if locked }}>{% for l in ["en", "bn", "en+bn"] %}<option {{ "selected" if p.language == l }}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="col-md-3 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="evergreen" id="eg" {{ "checked" if p.evergreen }} {{ "disabled" if locked }}><label class="form-check-label" for="eg">Evergreen</label></div></div>
+      </div>
+      <div class="mt-2"><label class="form-label">Hashtags</label><input class="form-control" name="hashtags" value="{{ (p.hashtags or [])|join(" ") }}" {{ "disabled" if locked }}></div>
+      {% if not locked %}<button class="btn btn-primary mt-3 align-self-start">Save changes</button>{% else %}<p class="text-muted mt-3 mb-0">Published or in-flight posts are read-only.</p>{% endif %}
+    </form>
+    {% if media %}<div class="card card-body mb-3"><strong>Media</strong>{% for m in media %}<div class="small">{{ m.filename }} · {{ m.mime }}</div>{% endfor %}</div>{% endif %}
+    <div class="card"><div class="card-header">Attempts</div>
+      <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>When</th><th>Type</th><th>Result</th><th>Detail</th></tr></thead><tbody>
+      {% for a in attempts %}<tr><td>{{ a.started_at|dt }}</td><td>{{ a.attempt_type }}</td><td>{{ a.result }}</td><td>{{ a.failure_class or "" }} {{ a.error_code or "" }} {{ a.error_message or "" }} {% if a.published_url %}<a href="{{ a.published_url }}" rel="noopener">link</a>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="4" class="text-muted">No attempts yet.</td></tr>{% endfor %}</tbody></table></div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card card-body mb-3">
+      <div><strong>Channel:</strong> {{ p.platform_key }} · {{ p.account }} <span class="badge text-bg-light border">{{ p.mode }}</span></div>
+      <div><strong>Type:</strong> {{ p.post_type }} · <strong>Queue:</strong> {{ p.queue or "none" }}</div>
+      <div><strong>Slot:</strong> {{ p.scheduled_at|dt or "none" }}</div>
+      {% if p.published_url %}<div><strong>Published:</strong> <a href="{{ p.published_url }}" rel="noopener">{{ p.published_url }}</a></div>{% endif %}
+      {% if problems and p.status in ("DRAFT", "IN_REVIEW") %}<div class="alert alert-warning mt-2 mb-0 py-2"><strong>Cannot approve yet:</strong><ul class="mb-0">{% for x in problems %}<li>{{ x }}</li>{% endfor %}</ul></div>{% endif %}
+    </div>
+    <div class="card card-body mb-3 d-flex flex-row flex-wrap gap-2">
+      {% if p.status == "DRAFT" %}<form method="post" action="/posts/{{ p.post_id }}/submit">{{ csrf_field() }}<button class="btn btn-outline-primary btn-sm">Send for review</button></form>{% endif %}
+      {% if p.status in ("DRAFT", "IN_REVIEW") %}<form method="post" action="/posts/{{ p.post_id }}/approve">{{ csrf_field() }}<button class="btn btn-success btn-sm" {{ "disabled" if problems }}>Approve</button></form>{% endif %}
+      {% if p.status in ("APPROVED", "SCHEDULED", "QUEUED", "IN_REVIEW", "DRAFT", "OVERDUE", "AWAITING_CONFIRMATION", "RETRYING") %}
+        <form method="post" action="/posts/{{ p.post_id }}/skip">{{ csrf_field() }}<button class="btn btn-outline-secondary btn-sm">Skip</button></form>
+        <form method="post" action="/posts/{{ p.post_id }}/cancel">{{ csrf_field() }}<button class="btn btn-outline-danger btn-sm">Cancel</button></form>{% endif %}
+      {% if p.status in ("FAILED_FINAL", "NEEDS_ATTENTION", "OVERDUE", "FAILED") %}<form method="post" action="/posts/{{ p.post_id }}/retry">{{ csrf_field() }}<button class="btn btn-warning btn-sm">Retry now</button></form>{% endif %}
+    </div>
+    {% if p.status == "IN_REVIEW" %}
+    <form method="post" action="/posts/{{ p.post_id }}/reject" class="card card-body mb-3">{{ csrf_field() }}
+      <label class="form-label">Reject with a comment</label><input class="form-control mb-2" name="comment" required>
+      <button class="btn btn-outline-danger btn-sm align-self-start">Reject</button></form>{% endif %}
+    <div class="card"><div class="card-header">History</div><ul class="list-group list-group-flush small">
+      {% for a in audit %}<li class="list-group-item">{{ a.at|dt }} · <strong>{{ a.action }}</strong> {{ a.actor }} {% if a.field %}({{ a.field }}){% endif %} {{ a.reason or "" }}</li>
+      {% else %}<li class="list-group-item text-muted">No history.</li>{% endfor %}</ul></div>
+  </div>
+</div>
+{% endblock %}

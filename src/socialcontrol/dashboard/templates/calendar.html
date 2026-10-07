@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge with context %}
+{% block content %}
+<h1 class="h4">Calendar</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-6 col-md-2"><select class="form-select" name="days">{% for d in [7, 14, 30, 60, 90] %}<option value="{{ d }}" {{ "selected" if f.days == d }}>Next {{ d }} days</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-3"><select class="form-select" name="platform"><option value="">All channels</option>{% for p in platforms %}<option {{ "selected" if f.platform == p }}>{{ p }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-3"><input class="form-control" name="status" placeholder="Status (e.g. SCHEDULED)" value="{{ f.status }}"></div>
+  <div class="col-6 col-md-2"><button class="btn btn-outline-primary w-100">Apply</button></div>
+</form>
+{% for day, items in by_day.items() %}
+<div class="card mb-2"><div class="card-header py-1 fw-semibold">{{ day }}</div>
+<ul class="list-group list-group-flush">
+{% for i in items %}
+  <li class="list-group-item d-flex justify-content-between flex-wrap gap-1">
+    <span>{{ i.slot_at|dt("%H:%M") }} · <strong>{{ i.platform_key }}</strong> <small class="text-muted">{{ i.queue }}</small>
+      {% if i.mode == "ASSISTED" %}<span class="badge text-bg-warning">assisted</span>{% endif %}</span>
+    <span>{% if i.post_id %}<a href="/posts/{{ i.post_id }}">{{ i.post_id }}</a> {{ status_badge(i.status) }} <small class="text-muted">{{ i.snippet }}</small>
+      {% else %}<span class="badge text-bg-light border">{{ i.slot_state }}</span>{% endif %}</span>
+  </li>
+{% endfor %}
+</ul></div>
+{% else %}<p class="text-muted">No slots in this range.</p>{% endfor %}
+{% endblock %}

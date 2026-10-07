@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# data: never commit content, media, exports, dumps
+*.csv
+*.zip
+*.mp4
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.dump
+*.sqlite
+media/
+exports/
+backups/
+reports_out/
+!tests/fixtures/**

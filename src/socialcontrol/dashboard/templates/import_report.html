@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf_field with context %}
+{% block content %}
+<h1 class="h4">Import report <small class="text-muted">{{ b.csv_name }}</small></h1>
+<div class="row g-2 mb-3">
+  <div class="col-4"><div class="card tile"><div class="n text-success">{{ b.counts.valid or 0 }}</div><div class="small text-muted">Valid</div></div></div>
+  <div class="col-4"><div class="card tile"><div class="n text-warning">{{ b.counts.warning or 0 }}</div><div class="small text-muted">Warnings</div></div></div>
+  <div class="col-4"><div class="card tile"><div class="n text-danger">{{ b.counts.error or 0 }}</div><div class="small text-muted">Errors</div></div></div>
+</div>
+<p>Status: <strong>{{ b.status }}</strong></p>
+{% if pending and b.status == "DRY_RUN" %}
+<form method="post" action="/imports/{{ b.id }}/confirm" class="card card-body mb-3">
+  {{ csrf_field() }}
+  <p class="mb-2">Rows with errors are left out. Valid rows are imported as <strong>DRAFT</strong> (or approved if the file says so).</p>
+  <div class="form-check"><input class="form-check-input" type="checkbox" name="include_warnings" id="iw" checked><label class="form-check-label" for="iw">Also import rows that have warnings</label></div>
+  <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="overwrite" id="ow"><label class="form-check-label" for="ow">Allow overwriting approved or scheduled posts (they return to review)</label></div>
+  <div><button class="btn btn-success">Confirm import</button> <a class="btn btn-outline-secondary" href="/imports/{{ b.id }}/errors.csv">Download errors.csv</a></div>
+</form>
+{% elif b.status == "DRY_RUN" %}<div class="alert alert-secondary">This check has expired. Upload the files again.</div>{% endif %}
+<div class="table-responsive"><table class="table table-sm bg-white"><thead><tr><th>Row</th><th>Level</th><th>Code</th><th>Message</th></tr></thead><tbody>
+{% for i in b.report or [] %}<tr class="{{ "table-danger" if i.level == "ERROR" else "table-warning" }}"><td>{{ i.row or "file" }}</td><td>{{ i.level }}</td><td>{{ i.code }}</td><td>{{ i.message }}</td></tr>
+{% else %}<tr><td colspan="4" class="text-muted">No problems found.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

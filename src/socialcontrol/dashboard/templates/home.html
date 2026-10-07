@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-2 mb-3">
+  {% for label, key, cls in [("Scheduled","scheduled","primary"),("Published today","published_today","success"),("Failed","failed","danger"),("Retrying","retrying","warning"),("Awaiting review","review","secondary"),("Assisted to do","assisted","warning"),("Empty slots (7d)","empty_slots","secondary")] %}
+  <div class="col-6 col-md-3 col-lg"><div class="card tile"><div class="n text-{{ cls }}">{{ tiles[key] }}</div><div class="small text-muted">{{ label }}</div></div></div>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">Channels</div>
+      <ul class="list-group list-group-flush">
+      {% for a in accounts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ a.display_name }} <small class="text-muted">{{ a.platform_key }}</small></span>
+          <span><span class="badge text-bg-light border">{{ a.mode }}</span> <span class="badge text-bg-{{ "success" if a.state == "CONNECTED" else ("secondary" if a.state in ("NOT_CONFIGURED", "DISABLED") else "danger") }}">{{ a.state }}</span></span>
+        </li>
+      {% else %}<li class="list-group-item text-muted">No accounts yet. <a href="/platforms">Add one</a>.</li>{% endfor %}
+      </ul></div>
+    <div class="card mt-3"><div class="card-header">Queue runway</div>
+      <ul class="list-group list-group-flush">
+      {% for q in queues %}
+        <li class="list-group-item d-flex justify-content-between"><span>{{ q.name }} <small class="text-muted">{{ q.status }}</small></span>
+        <span class="{{ "text-danger fw-bold" if q.low else "" }}">{{ q.runway }} days</span></li>
+      {% else %}<li class="list-group-item text-muted">No queues yet.</li>{% endfor %}
+      </ul></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">Next scheduled</div>
+      <ul class="list-group list-group-flush">
+      {% for p in next_posts %}
+        <li class="list-group-item d-flex justify-content-between"><span><a href="/posts/{{ p.post_id }}">{{ p.post_id }}</a> <small class="text-muted">{{ p.platform_key }} · {{ p.queue }}</small></span>
+        <span>{{ p.slot_at|dt }} {% if p.mode == "ASSISTED" %}<span class="badge text-bg-warning">assisted</span>{% endif %}</span></li>
+      {% else %}<li class="list-group-item text-muted">Nothing scheduled.</li>{% endfor %}
+      </ul></div>
+    <div class="card mt-3"><div class="card-header">Last published</div>
+      <ul class="list-group list-group-flush">
+      {% for p in last_posts %}
+        <li class="list-group-item d-flex justify-content-between"><a href="/posts/{{ p.post_id }}">{{ p.post_id }}</a><span>{{ p.published_at|dt }}</span></li>
+      {% else %}<li class="list-group-item text-muted">Nothing published yet.</li>{% endfor %}
+      </ul></div>
+  </div>
+</div>
+{% endblock %}

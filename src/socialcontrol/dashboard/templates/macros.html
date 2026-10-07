@@ -1,0 +1,5 @@
+{% macro status_badge(s) -%}
+{% set c = {"PUBLISHED":"success","SCHEDULED":"primary","APPROVED":"info","AWAITING_CONFIRMATION":"warning","OVERDUE":"warning","RETRYING":"warning","FAILED_FINAL":"danger","NEEDS_ATTENTION":"danger","FAILED":"danger","DRAFT":"secondary","IN_REVIEW":"secondary","CANCELLED":"dark","SKIPPED":"dark"} %}
+<span class="badge text-bg-{{ c.get(s, "secondary") }} badge-status">{{ s }}</span>
+{%- endmacro %}
+{% macro csrf_field() -%}<input type="hidden" name="csrf" value="{{ csrf }}">{%- endmacro %}

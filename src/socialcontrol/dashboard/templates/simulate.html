@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Next slots</h1>
+<div class="table-responsive"><table class="table table-sm bg-white"><thead><tr><th>Slot</th><th>State</th><th>Post</th></tr></thead><tbody>
+{% for s in slots %}<tr><td>{{ s.slot_at|dt }}</td><td>{{ s.state }}</td><td>{% if s.post_id %}<a href="/posts/{{ s.post_id }}">{{ s.post_id }}</a>{% else %}<span class="text-muted">open</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="3" class="text-muted">No slots yet.</td></tr>{% endfor %}</tbody></table></div>
+<a href="/queues" class="btn btn-outline-secondary btn-sm">Back to queues</a>
+{% endblock %}
