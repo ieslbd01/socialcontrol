@@ -11,7 +11,8 @@ permissions:
 
 jobs:
   watchdog:
-    if: github.ref == 'refs/heads/main'
+    # Master switch: set the repository variable SC_JOBS_ENABLED=true AFTER the secrets are added.
+    if: github.ref == 'refs/heads/main' && vars.SC_JOBS_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
