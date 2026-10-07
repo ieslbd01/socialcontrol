@@ -1,0 +1,41 @@
+# Render blueprint for the SocialControl dashboard (free web service).
+# The publisher, reports, watchdog and backup do NOT run here: they run on GitHub Actions.
+# Render free services sleep after ~15 minutes without traffic; the first request then takes
+# about a minute. That is acceptable for an admin tool (OPS-01).
+services:
+  - type: web
+    name: socialcontrol
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: false          # deploy deliberately, from a tagged commit (OPS-01 release procedure)
+    buildCommand: pip install .
+    startCommand: uvicorn --factory socialcontrol.dashboard.wsgi:build --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: SC_ENV
+        value: prod
+      # Secrets: enter these in the Render dashboard (Environment tab), never in this file.
+      - key: DATABASE_URL
+        sync: false
+      - key: SC_SIGNING_KEY
+        sync: false
+      - key: SC_MASTER_KEY
+        sync: false
+      - key: SC_ADMIN_EMAIL
+        sync: false
+      - key: SC_ADMIN_PASSWORD_HASH
+        sync: false
+      - key: SC_TOTP_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: media
+      - key: SC_BASE_URL
+        sync: false
