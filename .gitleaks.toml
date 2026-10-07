@@ -1,0 +1,13 @@
+# Gitleaks configuration (CI secret scan).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public test vectors and sample values that are not secrets"
+paths = [
+  # RFC 6238 appendix B shared secret ("12345678901234567890" in base32): a published test vector.
+  '''tests/unit/test_totp\.py''',
+]
+regexes = [
+  '''GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ''',
+]
