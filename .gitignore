@@ -21,8 +21,10 @@ __pycache__/
 *.png
 *.dump
 *.sqlite
-media/
-exports/
-backups/
-reports_out/
+.hypothesis/
+/media/
+/media_store/
+/exports/
+/backups/
+/reports_out/
 !tests/fixtures/**
