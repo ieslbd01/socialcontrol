@@ -48,3 +48,15 @@ def test_spaces_in_code_are_ignored_and_secret_generation():
 def test_provisioning_uri():
     uri = auth.provisioning_uri("ABC", "owner@ieslbd.com")
     assert uri.startswith("otpauth://totp/SocialControl:owner%40ieslbd.com?secret=ABC")
+
+
+def test_empty_environment_values_are_treated_as_unset(monkeypatch):
+    """Regression: GitHub passes unset secrets as '' and an empty SMTP_PORT crashed every job."""
+    from socialcontrol.config.settings import Settings
+
+    for name in ("SMTP_PORT", "SMTP_HOST", "TELEGRAM_BOT_TOKEN", "SC_TOTP_SECRET"):
+        monkeypatch.setenv(name, "")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://u:p@h:5432/d")
+    s = Settings(_env_file=None)
+    assert s.smtp_port == 587 and s.smtp_host == "" and s.sc_totp_secret == ""
+    assert s.database_url.endswith("@h:5432/d")  # real values are still read

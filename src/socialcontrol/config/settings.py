@@ -10,7 +10,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=os.environ.get("SC_ENV_FILE", ".env"), env_file_encoding="utf-8", extra="ignore"
+        env_file=os.environ.get("SC_ENV_FILE", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+        # GitHub Actions passes unset secrets as empty strings: treat them as "not set"
+        env_ignore_empty=True,
     )
 
     sc_env: str = "local"
