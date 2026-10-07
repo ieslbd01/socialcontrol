@@ -2,7 +2,9 @@ name: Publisher
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # public repo: free minutes. Private repo: use "*/30 * * * *" (see OPS-01)
+    # TEMPORARY TEST (08 Oct 2026): every 5 minutes to prove GitHub starts scheduled runs.
+    # Go back to "*/15 * * * *" once scheduled runs are confirmed (public repo: free minutes).
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
